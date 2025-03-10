@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clock - Digital & Analog</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #09213a;
+        transition: background-color 0.5s, color 0.5s;
+      }
+      body.dark-mode {
+        background-color: #1a1a1a;
+        color: #ffffff;
+      }
+      #clock-container {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #analog-clock {
+        width: 200px;
+        height: 200px;
+        border: 5px solid #f1ecec;
+        border-radius: 100%;
+        position: relative;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      .hand {
+        position: absolute;
+        background-color: gold;
+        transform-origin: 50% 100%;
+        left: 50%;
+        top: 50%;
+      }
+      #hour-hand {
+        width: 4px;
+        height: 50px;
+        margin-top: -50px;
+      }
+      #minute-hand {
+        width: 3px;
+        height: 70px;
+        margin-top: -70px;
+      }
+      #second-hand {
+        width: 2px;
+        height: 80px;
+        margin-top: -80px;
+        background-color: silver;
+      }
+      .hour-mark {
+        position: absolute;
+        width: 2px;
+        height: 10px;
+        background-color: #faf7f7;
+        left: 50%;
+        top: 0;
+        transform-origin: 50% 100px;
+      }
+      #digital-clock {
+        font-size: 5em;
+        margin-bottom: 20px;
+        color: rgb(214, 211, 40);
+      }
+      #toggle-button,
+      #dark-mode-button {
+        padding: 10px 20px;
+        font-size: 1.5em;
+        cursor: pointer;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="clock-container">
+      <div id="digital-clock">00:00:00</div>
+      <div id="analog-clock">
+        <div id="hour-hand" class="hand"></div>
+        <div id="minute-hand" class="hand"></div>
+        <div id="second-hand" class="hand"></div>
+        <!-- Hour marks -->
+        <div class="hour-mark" style="transform: rotate(0deg)"></div>
+        <div class="hour-mark" style="transform: rotate(30deg)"></div>
+        <div class="hour-mark" style="transform: rotate(60deg)"></div>
+        <div class="hour-mark" style="transform: rotate(90deg)"></div>
+        <div class="hour-mark" style="transform: rotate(120deg)"></div>
+        <div class="hour-mark" style="transform: rotate(150deg)"></div>
+        <div class="hour-mark" style="transform: rotate(180deg)"></div>
+        <div class="hour-mark" style="transform: rotate(210deg)"></div>
+        <div class="hour-mark" style="transform: rotate(240deg)"></div>
+        <div class="hour-mark" style="transform: rotate(270deg)"></div>
+        <div class="hour-mark" style="transform: rotate(300deg)"></div>
+        <div class="hour-mark" style="transform: rotate(330deg)"></div>
+      </div>
+      <button id="toggle-button">Switch to Analog</button>
+      <button id="dark-mode-button">Toggle Dark Mode</button>
+    </div>
+
+    <script>
+      const digitalClock = document.getElementById("digital-clock");
+      const analogClock = document.getElementById("analog-clock");
+      const toggleButton = document.getElementById("toggle-button");
+      const darkModeButton = document.getElementById("dark-mode-button");
+      const hourHand = document.getElementById("hour-hand");
+      const minuteHand = document.getElementById("minute-hand");
+      const secondHand = document.getElementById("second-hand");
+
+      let isDigital = localStorage.getItem("isDigital") === "true";
+      let isDarkMode = localStorage.getItem("isDarkMode") === "true";
+      let userToggledDarkMode =
+        localStorage.getItem("userToggledDarkMode") === "true";
+
+      function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        if (isDigital) {
+          // Update digital clock
+          digitalClock.textContent = `${String(hours).padStart(
+            2,
+            "0"
+          )}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+            2,
+            "0"
+          )}`;
+        } else {
+          // Update analog clock
+          const hourDeg = (hours % 12) * 30 + minutes / 2;
+          const minuteDeg = minutes * 6 + seconds / 10;
+          const secondDeg = seconds * 6;
+
+          hourHand.style.transform = `rotate(${hourDeg}deg)`;
+          minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+          secondHand.style.transform = `rotate(${secondDeg}deg)`;
+        }
+
+        // Automatically switch to dark mode after 6 PM if the user hasn't toggled it manually
+        if (hours >= 18 && !userToggledDarkMode) {
+          document.body.classList.add("dark-mode");
+          isDarkMode = true;
+          localStorage.setItem("isDarkMode", isDarkMode);
+        }
+      }
+
+      function toggleClock() {
+        isDigital = !isDigital;
+        localStorage.setItem("isDigital", isDigital);
+        if (isDigital) {
+          digitalClock.style.display = "block";
+          analogClock.style.display = "none";
+          toggleButton.textContent = "Switch to Analog";
+        } else {
+          digitalClock.style.display = "none";
+          analogClock.style.display = "block";
+          toggleButton.textContent = "Switch to Digital";
+        }
+      }
+
+      function toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        userToggledDarkMode = true;
+        localStorage.setItem("isDarkMode", isDarkMode);
+        localStorage.setItem("userToggledDarkMode", userToggledDarkMode);
+        document.body.classList.toggle("dark-mode", isDarkMode);
+      }
+
+      toggleButton.addEventListener("click", toggleClock);
+      darkModeButton.addEventListener("click", toggleDarkMode);
+
+      // Apply initial settings
+      if (isDigital) {
+        digitalClock.style.display = "block";
+        analogClock.style.display = "none";
+        toggleButton.textContent = "Switch to Analog";
+      } else {
+        digitalClock.style.display = "none";
+        analogClock.style.display = "block";
+        toggleButton.textContent = "Switch to Digital";
+      }
+
+      if (isDarkMode) {
+        document.body.classList.add("dark-mode");
+      }
+
+      // Update the clock every second
+      setInterval(updateClock, 1000);
+      updateClock(); // Initial call to display the clock immediately
+    </script>
+  </body>
+</html>
+
+
